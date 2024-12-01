@@ -24,7 +24,7 @@ const initialFriends = [
   },
 ];
 
-const movies = [
+const initialMovies = [
   {
     id: 111,
     title: 'The Lord of the Rings',
@@ -44,6 +44,7 @@ const movies = [
 export default function App() {
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [movies, setMovies] = useState(initialMovies);
 
   function handleSelectFriend(friend) {
     setSelectedFriend((cur) => (cur?.id === friend.id ? null : friend));
@@ -51,7 +52,14 @@ export default function App() {
   }
 
   function handleSelectMovie(movie) {
-    setSelectedMovie((cur) => (cur?.title === movie.title ? null : movie));
+    setSelectedMovie((cur) => (cur?.id === movie.id ? null : movie));
+  }
+
+  function handleSetMovies(updateMov) {
+    if (selectedMovie.id === updateMov.id) setSelectedMovie(updateMov);
+    setMovies((prevMovies) =>
+      prevMovies.map((movie) => (movie.id === updateMov.id ? updateMov : movie))
+    );
   }
 
   return (
@@ -67,6 +75,8 @@ export default function App() {
         <MovieCard
           selectedMovie={selectedMovie}
           selectedFriend={selectedFriend}
+          onSetMovies={handleSetMovies}
+          movies={movies}
         />
       )}
       {selectedFriend && (
@@ -77,6 +87,7 @@ export default function App() {
           <MoviesList
             selectedMovie={selectedMovie}
             onSelectMovie={handleSelectMovie}
+            movies={movies}
           />
         </div>
       )}
@@ -131,7 +142,7 @@ function Button({ onClick, children }) {
 // //////////////////////////////
 // MOVIES
 // //////////////////////////////
-function MoviesList({ onSelectMovie, selectedMovie }) {
+function MoviesList({ onSelectMovie, selectedMovie, movies }) {
   return (
     <ul className="movies-box">
       {movies.map((movie) => (
@@ -146,13 +157,9 @@ function MoviesList({ onSelectMovie, selectedMovie }) {
   );
 }
 
-function Movie({ movieObj, onSelectMovie, selectedMovie }) {
+function Movie({ movieObj, onSelectMovie }) {
   return (
-    <li
-      className="movie"
-      onClick={() => onSelectMovie(movieObj)}
-      selectedMovie={selectedMovie}
-    >
+    <li className="movie" onClick={() => onSelectMovie(movieObj)}>
       <img src={movieObj.image} alt={movieObj.title} />
       <h2>{movieObj.title}</h2>
     </li>
@@ -162,32 +169,38 @@ function Movie({ movieObj, onSelectMovie, selectedMovie }) {
 //////////////////////////////
 // MOVIE CARD
 //////////////////////////////
-function MovieCard({ selectedMovie, selectedFriend }) {
+function MovieCard({ selectedMovie, selectedFriend, movies, onSetMovies }) {
   const [gradesMovie, setGradesMovie] = useState(1);
 
   function handleSubmit(e) {
     e.preventDefault();
 
-    const newVote = { grade: gradesMovie, voter: selectedFriend.id };
-    // if (
-    //   !selectedMovie.rating.map((friend) => friend.id === selectedFriend.id)
-    // )
+    const newVote = {
+      grade: gradesMovie,
+      voter: selectedFriend.id,
+    };
 
-    selectedMovie.rating = [...selectedMovie.rating, newVote];
+    const updateMovie = {
+      ...selectedMovie,
+      rating: [...selectedMovie.rating, newVote],
+    };
 
-    return selectedMovie.rating;
+    onSetMovies(updateMovie);
   }
 
   const length = selectedMovie.rating.length;
   const rate =
-    selectedMovie.rating.reduce((acc, cur) => acc + cur.grade, 0) / length;
+    length > 0
+      ? selectedMovie.rating.reduce((acc, cur) => acc + cur.grade, 0) / length
+      : 'not rated jet';
 
   return (
     <form className="movie-card" onSubmit={handleSubmit}>
       <img src={selectedMovie.image} alt={selectedMovie.title} />
       <h1>{selectedMovie.title}</h1>
       <p>
-        {rate}/10 <span>{selectedMovie.rating.length}votes</span>
+        {rate}
+        <span> ({selectedMovie.rating.length} votes)</span>
       </p>
 
       <select
