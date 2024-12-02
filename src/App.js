@@ -30,6 +30,7 @@ const initialMovies = [
     title: 'The Lord of the Rings',
     image: 'https://fwcdn.pl/fpo/10/65/1065/8071180_1.10.webp',
     rating: [],
+    rate: '',
     isSelected: false,
   },
   {
@@ -37,6 +38,7 @@ const initialMovies = [
     title: 'Enemy of the State',
     image: 'https://fwcdn.pl/fpo/17/83/11783/7488943_1.10.webp',
     rating: [],
+    rate: '',
     isSelected: false,
   },
 ];
@@ -162,6 +164,7 @@ function Movie({ movieObj, onSelectMovie }) {
     <li className="movie" onClick={() => onSelectMovie(movieObj)}>
       <img src={movieObj.image} alt={movieObj.title} />
       <h2>{movieObj.title}</h2>
+      <p>{}</p>
     </li>
   );
 }
